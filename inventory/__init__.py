@@ -24,13 +24,8 @@ def register_extensions(app):
     db.init_app(app)
     with app.app_context():
       db.create_all()
-    # db.create_all()
-    # db.session.commit()
-    # db.init_app(app)
-
-    # with app.app_context():
-    #     db.create_all()
-    # return None
+  
+    return None
 
 def register_blueprints(app):
     """Register Flask blueprints."""
