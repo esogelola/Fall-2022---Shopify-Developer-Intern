@@ -57,8 +57,22 @@ def updateProduct(product_id):
 
     
     try:
-        db.session.commit() 
-        # Update Product & Location -> Transfers
+        
+        update_transfer=  Transfer.query\
+        .join(Product, Transfer.product_name == old_product.product_name)\
+        .add_columns(
+            Transfer.transfer_id,
+            Transfer.product_qty,
+            Product.product_name, 
+            Transfer.transfer_from,
+            Transfer.transfer_to,
+            Transfer.transfer_time)\
+        .all()
+        print(update_transfer)
+        for trans in update_transfer:
+          trans.product_name = product.product_name
+          trans.product_qty = product.product_qty
+        db.session.commit()
         return redirect("/product")
 
     except:
@@ -95,7 +109,14 @@ def updateLocation(location_id):
     
     try:
         db.session.commit() 
-        # Update Product & Location -> Transfers
+        # trans1 = Transfer.query.filter(Transfer.transfer_from == old_location.transfer_from).all()
+        # trans2 = Transfer.query.filter(Transfer.transfer_to == old_location.transfer_to).all()    
+
+        # for tra in trans1:
+        #   tra.transfer_to = location.transfer_to
+        # for tra in trans2:
+        #   tra.transfer_to = location.transfer_to
+        # db.session.commit()
         return redirect("/location")
 
     except:
@@ -110,11 +131,14 @@ def transfers():
     qty             = request.form["product_qty"]
     transfer_from    = request.form["transfer_from"]
     transfer_to      = request.form["transfer_to"]
-
+    
     if transfer_from != transfer_to and transfer_to != transfer_from:
       new_transfer = Transfer(product_name=product_name, product_qty=qty, transfer_from=transfer_from, transfer_to=transfer_to)
+      new_inventory = Inventory(location=transfer_to, product_name=product_name, product_qty=qty)
+      
       try:
         db.session.add(new_transfer)
+        db.session.add(new_inventory)
         db.session.commit()
         return redirect("/transfers")
       except:
